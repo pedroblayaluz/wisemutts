@@ -1,7 +1,7 @@
 FROM public.ecr.aws/lambda/python:3.12
 
 # Install system dependencies
-RUN yum install -y ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
