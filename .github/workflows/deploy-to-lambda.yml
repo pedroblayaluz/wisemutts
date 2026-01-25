@@ -31,19 +31,24 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       
       - name: Create Lambda Layer package
         run: |
           mkdir -p layer/python
-          pip install -r requirements.txt -t layer/python
+          pip install -r requirements.txt -t layer/python --no-cache-dir
           cd layer
+          find . -type d -name "*.dist-info" -exec rm -rf {} + 2>/dev/null || true
+          find . -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true
+          find . -type d -name "test" -exec rm -rf {} + 2>/dev/null || true
+          find . -type f -name "*.pyc" -delete
+          find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
           zip -r ../lambda-layer.zip .
           cd ..
       
       - name: Deploy Lambda Layer
         env:
-          LAYER_NAME: wisemutts-dependencies
+          LAYER_NAME: wisemutts-dependencie2
         run: |
           aws lambda publish-layer-version \
             --layer-name ${{ env.LAYER_NAME }} \
