@@ -23,6 +23,7 @@ WORKDIR /tmp
 
 # Add LAMBDA_TASK_ROOT to Python path so imports work
 ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
+ENV PATH=/usr/local/bin:${PATH}
 
 # Set the CMD to your handler
 CMD [ "src.main.lambda_handler" ]
