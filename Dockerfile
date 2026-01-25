@@ -11,7 +11,8 @@ RUN mkdir -p ${LAMBDA_TASK_ROOT}
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
 
 # Install all requirements from lock file (exact versions from local venv)
-RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock && \
+    pip install --no-cache-dir aws-lambda-ric
 
 # Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
@@ -22,5 +23,5 @@ WORKDIR /tmp
 # Add LAMBDA_TASK_ROOT to Python path so imports work
 ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
 
-# Set the CMD to your handler
-CMD [ "src.main.lambda_handler" ]
+# Set the CMD to your handler with Lambda RIC
+CMD [ "aws_lambda_ric.bootstrap.handler", "src.main.lambda_handler" ]
