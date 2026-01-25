@@ -12,7 +12,7 @@ COPY requirements.lock ${LAMBDA_TASK_ROOT}/
 
 # Install all requirements from lock file (exact versions from local venv)
 RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock && \
-    pip install --no-cache-dir aws-lambda-ric
+    pip install --no-cache-dir awslambdaric
 
 # Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
