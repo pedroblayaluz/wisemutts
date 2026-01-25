@@ -9,5 +9,11 @@ RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
 # Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
 
+# Set working directory to /tmp (writable in Lambda)
+WORKDIR /tmp
+
+# Add LAMBDA_TASK_ROOT to Python path so imports work
+ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
+
 # Set the CMD to your handler
 CMD [ "src.main.lambda_handler" ]
