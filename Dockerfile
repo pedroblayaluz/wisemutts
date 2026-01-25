@@ -24,4 +24,4 @@ WORKDIR /tmp
 ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
 
 # Set the CMD to your handler with Lambda RIC
-CMD [ "aws_lambda_ric.bootstrap.handler", "src.main.lambda_handler" ]
+CMD [ "python", "-m", "awslambdaric", "src.main.lambda_handler" ]
