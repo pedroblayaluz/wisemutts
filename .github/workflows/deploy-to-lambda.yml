@@ -1,0 +1,63 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - '.github/workflows/deploy-to-lambda.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: github-actions-${{ github.run_id }}
+          role-duration-seconds: 900
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          mkdir -p package
+          pip install -r requirements.txt -t package
+          cp -r src/ package/
+      
+      - name: Create deployment package
+        run: |
+          cd package
+          zip -r ../lambda-deployment.zip .
+          cd ..
+      
+      - name: Deploy to Lambda
+        env:
+          FUNCTION_NAME: wisemutts
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --zip-file fileb://lambda-deployment.zip
+      
+      - name: Verify deployment
+        env:
+          FUNCTION_NAME: wisemutts
+        run: |
+          aws lambda get-function \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --query 'Configuration.LastModified' \
+            --output text

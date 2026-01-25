@@ -1,0 +1,33 @@
+name: WiseMutts Daily Automation
+
+on:
+  schedule:
+    - cron: '0 21 * * *'  # Daily at 6 PM São Paulo time (9 PM UTC)
+  workflow_dispatch:  # Manual trigger option
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  trigger-lambda:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: github-actions-wisemutts
+
+      - name: Invoke Lambda function
+        run: |
+          aws lambda invoke \
+            --function-name wisemutts \
+            --payload '{"source":"github-actions"}' \
+            response.json
+          
+          echo "Lambda invocation response:"
+          cat response.json
+
