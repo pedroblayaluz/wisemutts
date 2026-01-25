@@ -1,7 +1,7 @@
-FROM amazonlinux:2023 as builder
+FROM ubuntu:22.04 as builder
 
 # Install ffmpeg
-RUN yum install -y ffmpeg && \
+RUN apt-get update && apt-get install -y ffmpeg && \
     cp /usr/bin/ffmpeg /ffmpeg
 
 FROM public.ecr.aws/lambda/python:3.12
