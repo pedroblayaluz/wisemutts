@@ -1,3 +1,2 @@
-mediaichemy
-instapost
-python-dotenv>=1.1.0
+mediaichemy==1.0.7
+instapost==0.1.1
