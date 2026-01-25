@@ -1,0 +1,3 @@
+mediaichemy
+instapost
+python-dotenv
