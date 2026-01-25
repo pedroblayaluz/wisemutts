@@ -1,7 +1,11 @@
-FROM public.ecr.aws/lambda/python:3.12
+FROM python:3.12-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
+# Install system dependencies including ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create Lambda directories
+ENV LAMBDA_TASK_ROOT=/var/task
+RUN mkdir -p ${LAMBDA_TASK_ROOT}
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
