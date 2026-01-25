@@ -4,7 +4,7 @@
 
 Automated Instagram content creation with AI-generated pixel art videos and philosophical narration.
 
-## How It Works
+### How It Works
 
 Every day, WiseMutts creates and posts beautiful pixel art videos featuring a contemplative dog with whispered wisdom. Each day rotates through three themes:
 
@@ -24,7 +24,7 @@ Handles the creative side of WiseMutts. It generates the pixel art visuals, crea
 
 Handles posting to Instagram. Once WiseMutts has generated the video and captions, instapost takes care of uploading it as a reel to Instagram with the right metadata and captions, keeping everything automated and seamless.
 
-## 🤖 Automation
+### 🤖 Automation
 
 GitHub Actions CI/CD automatically creates and posts videos daily at 6 PM São Paulo time (9 PM UTC). Every day, the workflow runs, generates fresh content, and posts to Instagram—all without lifting a finger.
 
@@ -33,4 +33,35 @@ GitHub Actions CI/CD automatically creates and posts videos daily at 6 PM São P
 ## 🎬 Showcase
 
 Check out some generated videos:
+
+### 🌿 Presence & Simplicity
+https://github.com/user-attachments/assets/4097bf88-76fc-4f21-80ef-fb8fd9f033ad
+> *Sometimes the best moments are the quiet ones 🐾✨ Find peace in simply being. Double tap if you needed this reminder 💙
+> 
+> #peaceful #mindfulness #doglovers #pixelart #calm*
+
+
+*Coming soon...*
+
+---
+
+### 🦋 Authenticity
+
+
+https://github.com/user-attachments/assets/74e835de-0a49-47c7-9882-6ace671b1013
+> *In a world of copies, be an original 🐾✨ Your uniqueness is your superpower. Stay true to you 💙
+> 
+> #selflove #beyourself #motivation #inspiration #positivevibes*
+
+---
+### 🤖 Digital World
+
+
+
+https://github.com/user-attachments/assets/dfa9e172-6aa0-4826-9fa6-a63ccd690c60
+
+
+> *We scroll for connection but feel more alone 💔 Technology built walls, not bridges. Time to remember what it means to be human ✨*
+>
+> #technology #mentalhealth #connection #awareness #digitaldetox
 
