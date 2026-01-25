@@ -1,3 +1,2 @@
 mediaichemy
 instapost
-python-dotenv
