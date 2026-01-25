@@ -1,10 +1,13 @@
+FROM amazonlinux:2023 as builder
+
+# Install ffmpeg
+RUN yum install -y ffmpeg && \
+    cp /usr/bin/ffmpeg /ffmpeg
+
 FROM public.ecr.aws/lambda/python:3.12
 
-# Download ffmpeg binary
-RUN curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar xJ -C /tmp && \
-    mv /tmp/ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/ && \
-    chmod +x /usr/local/bin/ffmpeg && \
-    rm -rf /tmp/ffmpeg-*-amd64-static
+# Copy ffmpeg from builder
+COPY --from=builder /ffmpeg /usr/local/bin/ffmpeg
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
