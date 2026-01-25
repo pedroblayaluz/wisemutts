@@ -1,13 +1,18 @@
 FROM ubuntu:22.04 as builder
 
-# Install ffmpeg
+# Install ffmpeg and dependencies
 RUN apt-get update && apt-get install -y ffmpeg && \
-    cp /usr/bin/ffmpeg /ffmpeg
+    mkdir -p /opt/ffmpeg/bin /opt/ffmpeg/lib && \
+    cp /usr/bin/ffmpeg /opt/ffmpeg/bin/ && \
+    cp /usr/bin/ffprobe /opt/ffmpeg/bin/ && \
+    ldd /usr/bin/ffmpeg | grep "=>" | awk '{print $3}' | xargs -I {} cp {} /opt/ffmpeg/lib/ 2>/dev/null || true && \
+    ldd /usr/bin/ffprobe | grep "=>" | awk '{print $3}' | xargs -I {} cp {} /opt/ffmpeg/lib/ 2>/dev/null || true
 
 FROM public.ecr.aws/lambda/python:3.12
 
-# Copy ffmpeg from builder
-COPY --from=builder /ffmpeg /usr/local/bin/ffmpeg
+# Copy ffmpeg and libraries from builder
+COPY --from=builder /opt/ffmpeg/bin/ffmpeg /usr/local/bin/ffmpeg
+COPY --from=builder /opt/ffmpeg/lib/* /usr/local/lib/
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
