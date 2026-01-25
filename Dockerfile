@@ -1,18 +1,16 @@
-FROM python:3.12-slim
+FROM public.ecr.aws/lambda/python:3.12
 
-# Install system dependencies including ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Create Lambda directories
-ENV LAMBDA_TASK_ROOT=/var/task
-RUN mkdir -p ${LAMBDA_TASK_ROOT}
+# Download ffmpeg binary
+RUN curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar xJ -C /tmp && \
+    mv /tmp/ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/ && \
+    chmod +x /usr/local/bin/ffmpeg && \
+    rm -rf /tmp/ffmpeg-*-amd64-static
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
 
 # Install all requirements from lock file (exact versions from local venv)
-RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock && \
-    pip install --no-cache-dir awslambdaric
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
 
 # Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
@@ -23,5 +21,5 @@ WORKDIR /tmp
 # Add LAMBDA_TASK_ROOT to Python path so imports work
 ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
 
-# Set the CMD to your handler with Lambda RIC
-CMD [ "python", "-m", "awslambdaric", "src.main.lambda_handler" ]
+# Set the CMD to your handler
+CMD [ "src.main.lambda_handler" ]
