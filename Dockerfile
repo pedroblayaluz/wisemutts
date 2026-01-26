@@ -1,4 +1,12 @@
+FROM linuxserver/ffmpeg as ffmpeg-builder
+
 FROM public.ecr.aws/lambda/python:3.12
+
+# Copy ffmpeg binaries from linuxserver/ffmpeg
+COPY --from=ffmpeg-builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
+
+# Copy ffmpeg libraries from linuxserver/ffmpeg
+COPY --from=ffmpeg-builder /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
