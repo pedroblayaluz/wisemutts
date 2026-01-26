@@ -16,12 +16,17 @@ ENV LAMBDA_TASK_ROOT=/var/task
 RUN mkdir -p ${LAMBDA_TASK_ROOT}
 WORKDIR ${LAMBDA_TASK_ROOT}
 
+# Create a virtual environment
+RUN python3.12 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV=/opt/venv
+
 # Install AWS Lambda runtime interface client for Python
-RUN pip3 install --no-cache-dir aws-lambda-runtime-interface-client
+RUN pip install --no-cache-dir aws-lambda-runtime-interface-client
 
 # Copy requirements and install dependencies
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
-RUN pip3 install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
 
 # Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
@@ -36,7 +41,7 @@ RUN chmod +x /opt/bootstrap
 WORKDIR /tmp
 
 # Set Python path
-ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
+ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
 
 # Set entrypoint to the bootstrap script
 ENTRYPOINT ["/opt/bootstrap"]
