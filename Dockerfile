@@ -1,25 +1,41 @@
 FROM linuxserver/ffmpeg as ffmpeg-stage
 
-# Create a script to copy ffmpeg and all its dependencies
+# Copy only ffmpeg-specific libraries, NOT system libraries
 RUN mkdir -p /ffmpeg-output/bin /ffmpeg-output/lib && \
     cp /usr/local/bin/ffmpeg /ffmpeg-output/bin/ && \
     cp /usr/local/bin/ffprobe /ffmpeg-output/bin/ && \
-    # Get all library dependencies and copy them
+    # Get ffmpeg library dependencies, but EXCLUDE system libraries
     for lib in $(ldd /usr/local/bin/ffmpeg | grep -o '/[^ ]*' | sort -u); do \
-      if [ -f "$lib" ]; then cp "$lib" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
+      # Skip system libraries that Lambda already has
+      case "$lib" in \
+        */libc.so* | */libm.so* | */libdl.so* | */libpthread.so* | */librt.so* | \
+        */libstdc++.so* | */libgcc_s.so* | */ld-linux* | */libz.so* ) \
+          echo "Skipping system lib: $lib"; \
+          ;; \
+        *) \
+          if [ -f "$lib" ]; then cp "$lib" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
+          ;; \
+      esac; \
     done && \
-    # Also get transitive dependencies by examining each library
+    # Get transitive dependencies from ffmpeg libs (but exclude system libs)
     for lib in /ffmpeg-output/lib/*.so*; do \
       if [ -f "$lib" ]; then \
         for dep in $(ldd "$lib" 2>/dev/null | grep -o '/[^ ]*' | sort -u); do \
-          if [ -f "$dep" ]; then cp "$dep" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
+          case "$dep" in \
+            */libc.so* | */libm.so* | */libdl.so* | */libpthread.so* | */librt.so* | \
+            */libstdc++.so* | */libgcc_s.so* | */ld-linux* | */libz.so* ) \
+              ;; \
+            *) \
+              if [ -f "$dep" ]; then cp "$dep" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
+              ;; \
+          esac; \
         done; \
       fi; \
     done
 
 FROM public.ecr.aws/lambda/python:3.12
 
-# Copy ffmpeg and libraries from builder stage
+# Copy ffmpeg and libraries from builder stage (but NOT system libraries)
 COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffmpeg /usr/local/bin/
 COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffprobe /usr/local/bin/
 COPY --from=ffmpeg-stage /ffmpeg-output/lib/* /usr/lib/x86_64-linux-gnu/
