@@ -1,50 +1,31 @@
-FROM linuxserver/ffmpeg as ffmpeg-stage
+FROM linuxserver/ffmpeg AS ffmpeg-stage
 
-# Copy only ffmpeg-specific libraries, NOT system libraries
+# Create output directories and copy ffmpeg binary + all needed libraries
 RUN mkdir -p /ffmpeg-output/bin /ffmpeg-output/lib && \
     cp /usr/local/bin/ffmpeg /ffmpeg-output/bin/ && \
     cp /usr/local/bin/ffprobe /ffmpeg-output/bin/ && \
-    # Get ffmpeg library dependencies, but EXCLUDE system libraries
-    for lib in $(ldd /usr/local/bin/ffmpeg | grep -o '/[^ ]*' | sort -u); do \
-      # Skip system libraries that Lambda already has
-      case "$lib" in \
-        */libc.so* | */libm.so* | */libdl.so* | */libpthread.so* | */librt.so* | \
-        */libstdc++.so* | */libgcc_s.so* | */ld-linux* | */libz.so* ) \
-          echo "Skipping system lib: $lib"; \
-          ;; \
-        *) \
-          if [ -f "$lib" ]; then cp "$lib" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
-          ;; \
-      esac; \
+    # Copy ALL libraries ffmpeg needs (use script to get all dependencies)
+    for lib in $(ldd /usr/local/bin/ffmpeg | grep -oP '(?<= => )[^ ]+' | sort -u); do \
+      if [ -f "$lib" ]; then cp "$lib" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
     done && \
-    # Get transitive dependencies from ffmpeg libs (but exclude system libs)
+    # Also get transitive deps from those libraries
     for lib in /ffmpeg-output/lib/*.so*; do \
-      if [ -f "$lib" ]; then \
-        for dep in $(ldd "$lib" 2>/dev/null | grep -o '/[^ ]*' | sort -u); do \
-          case "$dep" in \
-            */libc.so* | */libm.so* | */libdl.so* | */libpthread.so* | */librt.so* | \
-            */libstdc++.so* | */libgcc_s.so* | */ld-linux* | */libz.so* ) \
-              ;; \
-            *) \
-              if [ -f "$dep" ]; then cp "$dep" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
-              ;; \
-          esac; \
+      if [ -f "$lib" ] && file "$lib" | grep -q ELF; then \
+        for dep in $(ldd "$lib" 2>/dev/null | grep -oP '(?<= => )[^ ]+' | sort -u); do \
+          if [ -f "$dep" ]; then cp "$dep" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
         done; \
       fi; \
     done
 
 FROM public.ecr.aws/lambda/python:3.12
 
-# Copy ffmpeg and libraries from builder stage (but NOT system libraries)
+# Copy ffmpeg binary and all its dependencies
 COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffmpeg /usr/local/bin/
 COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffprobe /usr/local/bin/
 COPY --from=ffmpeg-stage /ffmpeg-output/lib/* /usr/lib/x86_64-linux-gnu/
 
-# Ensure library cache is updated
+# Update library cache
 RUN ldconfig || true
-
-# Verify ffmpeg works
-RUN /usr/local/bin/ffmpeg -version 2>&1 | head -3 || echo "Warning: ffmpeg test at build time inconclusive"
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
@@ -61,9 +42,7 @@ RUN chmod +x /opt/test-ffmpeg.sh
 WORKDIR /tmp
 
 # Add LAMBDA_TASK_ROOT to Python path so imports work
-ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
-# Ensure /usr/lib/x86_64-linux-gnu is in library path
-ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
 
 # Set the CMD to your handler
 CMD [ "src.main.lambda_handler" ]
