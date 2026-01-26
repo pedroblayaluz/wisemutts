@@ -94,21 +94,21 @@ to yourself in a world that often pressures conformity.
         prompt_index = (day_of_year - 1) % len(WiseMutts.PROMPTS)
         return WiseMutts.PROMPTS[prompt_index]
 
-    BACKGROUND_URLS = [
-        "https://www.youtube.com/watch?v=4YnecPKoxaI",
-        "https://www.youtube.com/watch?v=KnbZN_FNwk0",
-        "https://www.youtube.com/watch?v=Udf4_YCp_Mg",
-        "https://www.youtube.com/watch?v=SNWM2DxcDfI",
-        "https://www.youtube.com/watch?v=nhDp_MQhX9Y",
-        "https://www.youtube.com/watch?v=z17Ild98vzY",
-        "https://www.youtube.com/watch?v=eeOYPbDmlOo",
-        "https://www.youtube.com/watch?v=hHREvYAZP-A",
-        "https://www.youtube.com/watch?v=7bYf1AQBaj8",
-        "https://www.youtube.com/watch?v=aVM6Fbh4hc4",
-        "https://www.youtube.com/watch?v=h11FkwrbM3I",
-        "https://www.youtube.com/watch?v=m-6-PMiaZgM",
-        "https://www.youtube.com/watch?v=MKGXYNTnp1g",
-        "https://www.youtube.com/watch?v=5BIqnLWSC_s"
+    BACKGROUND_AUDIO_PATHS = [
+        "tracks/4YnecPKoxaI.mp3",
+        "tracks/KnbZN_FNwk0.mp3",
+        "tracks/Udf4_YCp_Mg.mp3",
+        "tracks/SNWM2DxcDfI.mp3",
+        "tracks/nhDp_MQhX9Y.mp3",
+        "tracks/z17Ild98vzY.mp3",
+        "tracks/eeOYPbDmlOo.mp3",
+        "tracks/hHREvYAZP-A.mp3",
+        "tracks/7bYf1AQBaj8.mp3",
+        "tracks/aVM6Fbh4hc4.mp3",
+        "tracks/h11FkwrbM3I.mp3",
+        "tracks/m-6-PMiaZgM.mp3",
+        "tracks/MKGXYNTnp1g.mp3",
+        "tracks/5BIqnLWSC_s.mp3"
     ]
 
     def __init__(
@@ -139,7 +139,7 @@ to yourself in a world that often pressures conformity.
             narration_silence_tail=5,
             narration_speed=1.0,
             background_relative_volume=2.0,
-            background_youtube_urls=self.BACKGROUND_URLS,
+            background_audio_paths=self.BACKGROUND_AUDIO_PATHS,
             subtitle_fontname="Times New Roman",
             subtitle_fontsize=18,
             subtitle_color="#FFFFFF",

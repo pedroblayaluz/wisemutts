@@ -1,2 +1,2 @@
-mediaichemy==1.0.7
+mediaichemy==1.1.0
 instapost==0.1.1

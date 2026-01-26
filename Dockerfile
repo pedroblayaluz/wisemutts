@@ -30,8 +30,6 @@ RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
 
 # Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
-COPY test-ffmpeg.sh /opt/test-ffmpeg.sh
-RUN chmod +x /opt/test-ffmpeg.sh
 
 # Set working directory to /tmp (writable in Lambda)
 WORKDIR /tmp
