@@ -28,11 +28,15 @@ RUN pip install --no-cache-dir awslambdaric
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
 RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
 
-# Copy function code
+# Copy function code and tests
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
+COPY tests/ ${LAMBDA_TASK_ROOT}/tests/
 
 # Copy audio tracks
 COPY tracks/ ${LAMBDA_TASK_ROOT}/tracks/
+
+# Run tests - build fails if tests don't pass
+RUN cd ${LAMBDA_TASK_ROOT} && python -m pytest tests/ -v --tb=short
 
 # Set working directory to /tmp (writable in Lambda)
 WORKDIR /tmp

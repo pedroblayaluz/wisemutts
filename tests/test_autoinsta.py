@@ -215,7 +215,7 @@ class TestAutoInstaPost:
 
         assert result is True
         mock_poster_instance.post_reel.assert_called_once_with(
-            video_url="/path/to/video.mp4",
+            video="/path/to/video.mp4",
             caption="Test caption",
             share_to_feed=True
         )
@@ -340,9 +340,9 @@ class TestAutoInstaPost:
         result = autoinsta.post()
 
         assert result is True
-        # Should pass the string directly as video_url
+        # Should pass the string directly as video
         mock_poster_instance.post_reel.assert_called_once_with(
-            video_url="video.mp4",
+            video="video.mp4",
             caption="",
             share_to_feed=True
         )

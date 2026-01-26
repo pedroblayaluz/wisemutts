@@ -17,12 +17,12 @@ class TestMain:
     async def test_main_success(self, mock_wisemutts_class):
         """Test successful main execution."""
         # Setup mocks
-        mock_wisemutts = AsyncMock()
-        mock_wisemutts.create.return_value = "video.mp4"
+        mock_wisemutts = Mock()
+        mock_wisemutts.create = AsyncMock(return_value="video.mp4")
         mock_captions = Mock()
         mock_captions.instagram.caption = "Test caption"
-        mock_wisemutts.create_captions.return_value = mock_captions
-        mock_wisemutts.post.return_value = True
+        mock_wisemutts.create_captions = AsyncMock(return_value=mock_captions)
+        mock_wisemutts.post = Mock(return_value=True)
         mock_wisemutts_class.return_value = mock_wisemutts
 
         await main()
@@ -54,10 +54,10 @@ class TestMain:
     @pytest.mark.asyncio
     async def test_main_post_failure(self, mock_wisemutts_class):
         """Test main handles post failure."""
-        mock_wisemutts = AsyncMock()
-        mock_wisemutts.create.return_value = "video.mp4"
-        mock_wisemutts.create_captions.return_value = Mock(instagram=Mock(caption="Caption"))
-        mock_wisemutts.post.return_value = False  # Post failed
+        mock_wisemutts = Mock()
+        mock_wisemutts.create = AsyncMock(return_value="video.mp4")
+        mock_wisemutts.create_captions = AsyncMock(return_value=Mock(instagram=Mock(caption="Caption")))
+        mock_wisemutts.post = Mock(return_value=False)  # Post failed
         mock_wisemutts_class.return_value = mock_wisemutts
 
         await main()
