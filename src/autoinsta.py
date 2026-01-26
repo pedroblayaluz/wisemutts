@@ -88,7 +88,7 @@ class AutoInsta:
                 raise ValueError(f"Could not extract video path from output: {output}")
 
             result = self.poster.post_reel(
-                video_url=video_path,
+                video=video_path,
                 caption=caption,
                 share_to_feed=share_to_feed
             )
