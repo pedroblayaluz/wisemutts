@@ -80,15 +80,15 @@ class AutoInsta:
             # StorylineVideo returns a list of VideoFile objects; use the first one
             output = self.creator.output
             if isinstance(output, list):
-                video_url = output[0].path if output else None
+                video_path = output[0].path if output else None
             else:
-                video_url = output.path if hasattr(output, 'path') else output
+                video_path = output.path if hasattr(output, 'path') else output
 
-            if not video_url:
-                raise ValueError(f"Could not extract video URL from output: {output}")
+            if not video_path:
+                raise ValueError(f"Could not extract video path from output: {output}")
 
             result = self.poster.post_reel(
-                video_url=video_url,
+                video_url=video_path,
                 caption=caption,
                 share_to_feed=share_to_feed
             )
