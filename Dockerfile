@@ -1,18 +1,21 @@
 FROM ubuntu:22.04 as builder
 
-# Install ffmpeg and dependencies
+# Install ffmpeg
 RUN apt-get update && apt-get install -y ffmpeg && \
-    mkdir -p /opt/ffmpeg/bin /opt/ffmpeg/lib && \
-    cp /usr/bin/ffmpeg /opt/ffmpeg/bin/ && \
-    cp /usr/bin/ffprobe /opt/ffmpeg/bin/ && \
-    ldd /usr/bin/ffmpeg | grep "=>" | awk '{print $3}' | xargs -I {} cp {} /opt/ffmpeg/lib/ 2>/dev/null || true && \
-    ldd /usr/bin/ffprobe | grep "=>" | awk '{print $3}' | xargs -I {} cp {} /opt/ffmpeg/lib/ 2>/dev/null || true
+    mkdir -p /opt/ffmpeg && \
+    cp /usr/bin/ffmpeg /opt/ffmpeg/ && \
+    cp /usr/bin/ffprobe /opt/ffmpeg/ && \
+    # Copy all lib directories that ffmpeg depends on
+    cp -r /lib/x86_64-linux-gnu /opt/ffmpeg/lib && \
+    cp -r /usr/lib/x86_64-linux-gnu /opt/ffmpeg/usrlib
 
 FROM public.ecr.aws/lambda/python:3.12
 
-# Copy ffmpeg and libraries from builder
-COPY --from=builder /opt/ffmpeg/bin/ffmpeg /usr/local/bin/ffmpeg
-COPY --from=builder /opt/ffmpeg/lib/* /usr/local/lib/
+# Copy ffmpeg binaries and all libraries from builder
+COPY --from=builder /opt/ffmpeg/ffmpeg /usr/local/bin/ffmpeg
+COPY --from=builder /opt/ffmpeg/ffprobe /usr/local/bin/ffprobe
+COPY --from=builder /opt/ffmpeg/lib /lib/x86_64-linux-gnu
+COPY --from=builder /opt/ffmpeg/usrlib /usr/lib/x86_64-linux-gnu
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
