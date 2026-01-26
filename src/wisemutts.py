@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from datetime import datetime
 from .autoinsta import AutoInsta
@@ -94,22 +95,30 @@ to yourself in a world that often pressures conformity.
         prompt_index = (day_of_year - 1) % len(WiseMutts.PROMPTS)
         return WiseMutts.PROMPTS[prompt_index]
 
-    BACKGROUND_AUDIO_PATHS = [
-        "tracks/4YnecPKoxaI.mp3",
-        "tracks/KnbZN_FNwk0.mp3",
-        "tracks/Udf4_YCp_Mg.mp3",
-        "tracks/SNWM2DxcDfI.mp3",
-        "tracks/nhDp_MQhX9Y.mp3",
-        "tracks/z17Ild98vzY.mp3",
-        "tracks/eeOYPbDmlOo.mp3",
-        "tracks/hHREvYAZP-A.mp3",
-        "tracks/7bYf1AQBaj8.mp3",
-        "tracks/aVM6Fbh4hc4.mp3",
-        "tracks/h11FkwrbM3I.mp3",
-        "tracks/m-6-PMiaZgM.mp3",
-        "tracks/MKGXYNTnp1g.mp3",
-        "tracks/5BIqnLWSC_s.mp3"
-    ]
+    @staticmethod
+    def get_background_audio_paths():
+        """Get background audio paths with support for both local dev and Lambda environments."""
+        # Get the base directory - Lambda uses /var/task, local uses current directory
+        base_dir = os.getenv("LAMBDA_TASK_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        
+        track_files = [
+            "4YnecPKoxaI.mp3",
+            "KnbZN_FNwk0.mp3",
+            "Udf4_YCp_Mg.mp3",
+            "SNWM2DxcDfI.mp3",
+            "nhDp_MQhX9Y.mp3",
+            "z17Ild98vzY.mp3",
+            "eeOYPbDmlOo.mp3",
+            "hHREvYAZP-A.mp3",
+            "7bYf1AQBaj8.mp3",
+            "aVM6Fbh4hc4.mp3",
+            "h11FkwrbM3I.mp3",
+            "m-6-PMiaZgM.mp3",
+            "MKGXYNTnp1g.mp3",
+            "5BIqnLWSC_s.mp3"
+        ]
+        
+        return [os.path.join(base_dir, "tracks", track) for track in track_files]
 
     def __init__(
         self,
@@ -139,7 +148,7 @@ to yourself in a world that often pressures conformity.
             narration_silence_tail=5,
             narration_speed=1.0,
             background_relative_volume=2.0,
-            background_audio_paths=self.BACKGROUND_AUDIO_PATHS,
+            background_audio_paths=self.get_background_audio_paths(),
             subtitle_fontname="Times New Roman",
             subtitle_fontsize=18,
             subtitle_color="#FFFFFF",
