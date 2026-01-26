@@ -43,30 +43,26 @@ jobs:
       
       - name: Build ffmpeg Lambda Layer with Amazon Linux
         run: |
-          # Use docker to build in Amazon Linux (same as Lambda runtime)
-          docker run --rm --entrypoint /bin/bash -v $PWD:/build amazon/aws-lambda-python:3.12 -c '
-            mkdir -p /tmp/lambda-layer/opt/bin
+          # Use Amazon Linux 2023 which has yum and ffmpeg available
+          docker run --rm --entrypoint /bin/bash -v $PWD:/build amazonlinux:2023 -c '
+            mkdir -p /tmp/lambda-layer/opt/bin /tmp/lambda-layer/lib64
             
-            # Install ffmpeg and all dependencies in same environment as Lambda
+            # Install ffmpeg
             yum install -y ffmpeg
             
-            # Copy ffmpeg binary
+            # Copy ffmpeg binaries
             cp /usr/bin/ffmpeg /tmp/lambda-layer/opt/bin/
             cp /usr/bin/ffprobe /tmp/lambda-layer/opt/bin/
             
-            # Copy all required libraries
-            mkdir -p /tmp/lambda-layer/lib64
-            cp /lib64/ld-linux-x86-64.so.2 /tmp/lambda-layer/lib64/
-            cp -r /usr/lib64/libavformat.so* /tmp/lambda-layer/lib64/
-            cp -r /usr/lib64/libavcodec.so* /tmp/lambda-layer/lib64/
-            cp -r /usr/lib64/libavutil.so* /tmp/lambda-layer/lib64/
-            cp -r /usr/lib64/libswscale.so* /tmp/lambda-layer/lib64/
-            cp -r /usr/lib64/libswresample.so* /tmp/lambda-layer/lib64/
-            cp -r /usr/lib64/libpostproc.so* /tmp/lambda-layer/lib64/
+            # Copy all required libraries - use find to get all ffmpeg dependencies
+            ldd /usr/bin/ffmpeg | grep -o "/[^ ]*" | while read lib; do
+              [ -f "$lib" ] && cp "$lib" /tmp/lambda-layer/lib64/ 2>/dev/null || true
+            done
             
             # Fix permissions
             chmod +x /tmp/lambda-layer/opt/bin/ffmpeg
             chmod +x /tmp/lambda-layer/opt/bin/ffprobe
+            chmod 644 /tmp/lambda-layer/lib64/*
           '
           
           # Create zip from the layer
