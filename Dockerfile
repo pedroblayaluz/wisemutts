@@ -1,48 +1,42 @@
-FROM linuxserver/ffmpeg AS ffmpeg-stage
+FROM linuxserver/ffmpeg
 
-# Create output directories and copy ffmpeg binary + all needed libraries
-RUN mkdir -p /ffmpeg-output/bin /ffmpeg-output/lib && \
-    cp /usr/local/bin/ffmpeg /ffmpeg-output/bin/ && \
-    cp /usr/local/bin/ffprobe /ffmpeg-output/bin/ && \
-    # Copy ALL libraries ffmpeg needs (use script to get all dependencies)
-    for lib in $(ldd /usr/local/bin/ffmpeg | grep -oP '(?<= => )[^ ]+' | sort -u); do \
-      if [ -f "$lib" ]; then cp "$lib" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
-    done && \
-    # Also get transitive deps from those libraries
-    for lib in /ffmpeg-output/lib/*.so*; do \
-      if [ -f "$lib" ] && file "$lib" | grep -q ELF; then \
-        for dep in $(ldd "$lib" 2>/dev/null | grep -oP '(?<= => )[^ ]+' | sort -u); do \
-          if [ -f "$dep" ]; then cp "$dep" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
-        done; \
-      fi; \
-    done
+# Install Python 3.12 and pip
+RUN apt-get update && apt-get install -y \
+    python3.12 \
+    python3.12-venv \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 
-FROM public.ecr.aws/lambda/python:3.12
+# Set Python 3.12 as default
+RUN ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
+    ln -sf /usr/bin/python3.12 /usr/bin/python
 
-# Copy ffmpeg binary and all its dependencies
-COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffmpeg /usr/local/bin/
-COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffprobe /usr/local/bin/
-COPY --from=ffmpeg-stage /ffmpeg-output/lib/* /usr/lib/x86_64-linux-gnu/
+# Create Lambda task root
+ENV LAMBDA_TASK_ROOT=/var/task
+RUN mkdir -p ${LAMBDA_TASK_ROOT}
+WORKDIR ${LAMBDA_TASK_ROOT}
 
-# Update library cache
-RUN ldconfig || true
+# Install AWS Lambda runtime interface client for Python
+RUN pip3 install --no-cache-dir aws-lambda-runtime-interface-client
 
-# Copy requirements
+# Copy requirements and install dependencies
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
+RUN pip3 install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
 
-# Install all requirements from lock file (exact versions from local venv)
-RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
-
-# Copy function code and test script
+# Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
 COPY test-ffmpeg.sh /opt/test-ffmpeg.sh
 RUN chmod +x /opt/test-ffmpeg.sh
 
+# Copy bootstrap script
+COPY bootstrap.py /opt/bootstrap
+RUN chmod +x /opt/bootstrap
+
 # Set working directory to /tmp (writable in Lambda)
 WORKDIR /tmp
 
-# Add LAMBDA_TASK_ROOT to Python path so imports work
-ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
+# Set Python path
+ENV PYTHONPATH=${LAMBDA_TASK_ROOT}:${PYTHONPATH}
 
-# Set the CMD to your handler
-CMD [ "src.main.lambda_handler" ]
+# Set entrypoint to the bootstrap script
+ENTRYPOINT ["/opt/bootstrap"]
