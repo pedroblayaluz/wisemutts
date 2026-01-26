@@ -31,6 +31,9 @@ RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.lock
 # Copy function code
 COPY src/ ${LAMBDA_TASK_ROOT}/src/
 
+# Copy audio tracks
+COPY tracks/ ${LAMBDA_TASK_ROOT}/tracks/
+
 # Set working directory to /tmp (writable in Lambda)
 WORKDIR /tmp
 
