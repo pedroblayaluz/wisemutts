@@ -41,6 +41,59 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/wisemutts:latest
             ${{ steps.login-ecr.outputs.registry }}/wisemutts:${{ github.sha }}
       
+      - name: Build ffmpeg Lambda Layer with Amazon Linux
+        run: |
+          # Use docker to build in Amazon Linux (same as Lambda runtime)
+          docker run --rm -v $PWD:/build amazon/aws-lambda-python:3.12 /bin/bash -c '
+            mkdir -p /tmp/lambda-layer/opt/bin
+            
+            # Install ffmpeg and all dependencies in same environment as Lambda
+            yum install -y ffmpeg
+            
+            # Copy ffmpeg binary
+            cp /usr/bin/ffmpeg /tmp/lambda-layer/opt/bin/
+            cp /usr/bin/ffprobe /tmp/lambda-layer/opt/bin/
+            
+            # Copy all required libraries
+            mkdir -p /tmp/lambda-layer/lib64
+            cp /lib64/ld-linux-x86-64.so.2 /tmp/lambda-layer/lib64/
+            cp -r /usr/lib64/libavformat.so* /tmp/lambda-layer/lib64/
+            cp -r /usr/lib64/libavcodec.so* /tmp/lambda-layer/lib64/
+            cp -r /usr/lib64/libavutil.so* /tmp/lambda-layer/lib64/
+            cp -r /usr/lib64/libswscale.so* /tmp/lambda-layer/lib64/
+            cp -r /usr/lib64/libswresample.so* /tmp/lambda-layer/lib64/
+            cp -r /usr/lib64/libpostproc.so* /tmp/lambda-layer/lib64/
+            
+            # Fix permissions
+            chmod +x /tmp/lambda-layer/opt/bin/ffmpeg
+            chmod +x /tmp/lambda-layer/opt/bin/ffprobe
+          '
+          
+          # Create zip from the layer
+          cd /tmp && zip -r ffmpeg-layer.zip lambda-layer/opt lambda-layer/lib64
+      
+      
+      - name: Publish ffmpeg Lambda Layer
+        id: layer
+        run: |
+          LAYER_VERSION=$(aws lambda publish-layer-version \
+            --layer-name wisemutts-ffmpeg \
+            --zip-file fileb:///tmp/ffmpeg-layer.zip \
+            --compatible-architectures x86_64 \
+            --compatible-runtimes python3.12 \
+            --query 'Version' \
+            --output text)
+          echo "layer_arn=arn:aws:lambda:${{ secrets.AWS_REGION }}:248936565176:layer:wisemutts-ffmpeg:${LAYER_VERSION}" >> $GITHUB_OUTPUT
+          echo "Layer published: wisemutts-ffmpeg version ${LAYER_VERSION}"
+      
+      - name: Update Lambda function layers
+        env:
+          FUNCTION_NAME: wisemutts
+        run: |
+          aws lambda update-function-configuration \
+            --function-name ${{ env.FUNCTION_NAME }} \
+            --layers ${{ steps.layer.outputs.layer_arn }}
+      
       - name: Update Lambda function image
         env:
           FUNCTION_NAME: wisemutts
@@ -49,6 +102,7 @@ jobs:
           aws lambda update-function-code \
             --function-name ${{ env.FUNCTION_NAME }} \
             --image-uri ${{ env.ECR_REGISTRY }}/wisemutts:latest
+      
       
       - name: Verify deployment
         env:
