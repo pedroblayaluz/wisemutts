@@ -77,17 +77,12 @@ class AutoInsta:
             user_info = self.poster.verify()
             print(f"✅ Connected as: {user_info.get('username', 'Unknown')}")
 
-            # Handle different output formats from mediaichemy versions
+            # StorylineVideo returns a list of VideoFile objects; use the first one
             output = self.creator.output
-            if isinstance(output, dict):
-                # mediaichemy 1.1.0+ returns a dict with 'video' key
-                video_url = output.get('video') or output.get('path')
-            elif isinstance(output, (list, tuple)):
-                # If it's a list/tuple, take the first element (video file)
-                video_url = output[0] if output else None
+            if isinstance(output, list):
+                video_url = output[0].path if output else None
             else:
-                # Assume it's already a string path
-                video_url = output
+                video_url = output.path if hasattr(output, 'path') else output
 
             if not video_url:
                 raise ValueError(f"Could not extract video URL from output: {output}")
