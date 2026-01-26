@@ -1,12 +1,22 @@
-FROM linuxserver/ffmpeg as ffmpeg-builder
+FROM linuxserver/ffmpeg as ffmpeg-stage
 
 FROM public.ecr.aws/lambda/python:3.12
 
-# Copy ffmpeg binaries from linuxserver/ffmpeg
-COPY --from=ffmpeg-builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/
-
-# Copy ffmpeg libraries from linuxserver/ffmpeg
-COPY --from=ffmpeg-builder /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
+# Copy ffmpeg binary and ALL needed libraries from ffmpeg stage
+COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavformat.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavcodec.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavutil.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libswscale.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libswresample.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavfilter.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavdevice.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libx264.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libx265.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libvpx.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libopus.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libmp3lame.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libstdc++.so* /usr/lib/x86_64-linux-gnu/
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
