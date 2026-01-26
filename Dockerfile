@@ -1,22 +1,31 @@
 FROM linuxserver/ffmpeg as ffmpeg-stage
 
+# Create a script to copy ffmpeg and all its dependencies
+RUN mkdir -p /ffmpeg-output/bin /ffmpeg-output/lib && \
+    cp /usr/local/bin/ffmpeg /ffmpeg-output/bin/ && \
+    cp /usr/local/bin/ffprobe /ffmpeg-output/bin/ && \
+    # Get all library dependencies and copy them
+    for lib in $(ldd /usr/local/bin/ffmpeg | grep -o '/[^ ]*' | sort -u); do \
+      if [ -f "$lib" ]; then cp "$lib" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
+    done && \
+    # Also get transitive dependencies by examining each library
+    for lib in /ffmpeg-output/lib/*.so*; do \
+      if [ -f "$lib" ]; then \
+        for dep in $(ldd "$lib" 2>/dev/null | grep -o '/[^ ]*' | sort -u); do \
+          if [ -f "$dep" ]; then cp "$dep" /ffmpeg-output/lib/ 2>/dev/null || true; fi; \
+        done; \
+      fi; \
+    done
+
 FROM public.ecr.aws/lambda/python:3.12
 
-# Copy ffmpeg binary and ALL needed libraries from ffmpeg stage
-COPY --from=ffmpeg-stage /usr/local/bin/ffmpeg /usr/local/bin/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavformat.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavcodec.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavutil.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libswscale.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libswresample.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavfilter.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libavdevice.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libx264.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libx265.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libvpx.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libopus.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libmp3lame.so* /usr/lib/x86_64-linux-gnu/
-COPY --from=ffmpeg-stage /usr/lib/x86_64-linux-gnu/libstdc++.so* /usr/lib/x86_64-linux-gnu/
+# Copy ffmpeg and libraries from builder stage
+COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffmpeg /usr/local/bin/
+COPY --from=ffmpeg-stage /ffmpeg-output/bin/ffprobe /usr/local/bin/
+COPY --from=ffmpeg-stage /ffmpeg-output/lib/* /usr/lib/x86_64-linux-gnu/
+
+# Ensure library cache is updated
+RUN ldconfig || true
 
 # Copy requirements
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
