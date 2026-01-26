@@ -77,8 +77,23 @@ class AutoInsta:
             user_info = self.poster.verify()
             print(f"✅ Connected as: {user_info.get('username', 'Unknown')}")
 
+            # Handle different output formats from mediaichemy versions
+            output = self.creator.output
+            if isinstance(output, dict):
+                # mediaichemy 1.1.0+ returns a dict with 'video' key
+                video_url = output.get('video') or output.get('path')
+            elif isinstance(output, (list, tuple)):
+                # If it's a list/tuple, take the first element (video file)
+                video_url = output[0] if output else None
+            else:
+                # Assume it's already a string path
+                video_url = output
+
+            if not video_url:
+                raise ValueError(f"Could not extract video URL from output: {output}")
+
             result = self.poster.post_reel(
-                video_url=self.creator.output,
+                video_url=video_url,
                 caption=caption,
                 share_to_feed=share_to_feed
             )
