@@ -100,7 +100,7 @@ to yourself in a world that often pressures conformity.
         """Get background audio paths with support for both local dev and Lambda environments."""
         # Get the base directory - Lambda uses /var/task, local uses current directory
         base_dir = os.getenv("LAMBDA_TASK_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        
+
         track_files = [
             "4YnecPKoxaI.mp3",
             "KnbZN_FNwk0.mp3",
@@ -117,7 +117,7 @@ to yourself in a world that often pressures conformity.
             "MKGXYNTnp1g.mp3",
             "5BIqnLWSC_s.mp3"
         ]
-        
+
         return [os.path.join(base_dir, "tracks", track) for track in track_files]
 
     def __init__(
