@@ -22,7 +22,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV=/opt/venv
 
 # Install AWS Lambda runtime interface client for Python
-RUN pip install --no-cache-dir aws-lambda-runtime-interface-client
+RUN pip install --no-cache-dir awslambdaric
 
 # Copy requirements and install dependencies
 COPY requirements.lock ${LAMBDA_TASK_ROOT}/
