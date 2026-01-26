@@ -44,7 +44,7 @@ jobs:
       - name: Build ffmpeg Lambda Layer with Amazon Linux
         run: |
           # Use docker to build in Amazon Linux (same as Lambda runtime)
-          docker run --rm -v $PWD:/build amazon/aws-lambda-python:3.12 /bin/bash -c '
+          docker run --rm --entrypoint /bin/bash -v $PWD:/build amazon/aws-lambda-python:3.12 -c '
             mkdir -p /tmp/lambda-layer/opt/bin
             
             # Install ffmpeg and all dependencies in same environment as Lambda
