@@ -33,15 +33,12 @@ COPY src/ ${LAMBDA_TASK_ROOT}/src/
 COPY test-ffmpeg.sh /opt/test-ffmpeg.sh
 RUN chmod +x /opt/test-ffmpeg.sh
 
-# Copy bootstrap script
-COPY bootstrap.py /opt/bootstrap
-RUN chmod +x /opt/bootstrap
-
 # Set working directory to /tmp (writable in Lambda)
 WORKDIR /tmp
 
 # Set Python path
 ENV PYTHONPATH=${LAMBDA_TASK_ROOT}
 
-# Set entrypoint to the bootstrap script
-ENTRYPOINT ["/opt/bootstrap"]
+# Set entrypoint to run Lambda runtime interface client
+ENTRYPOINT [ "/opt/venv/bin/python", "-m", "awslambdaric" ]
+CMD [ "src.main.lambda_handler" ]
