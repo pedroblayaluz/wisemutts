@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from mediaichemy.creator import MediaCreator
 from mediaichemy.media import StorylineVideo
 from instapost import InstagramPoster
+from src.retry import retry_with_backoff
 
 
 class AutoInsta:
@@ -87,7 +88,7 @@ class AutoInsta:
             if not video_path:
                 raise ValueError(f"Could not extract video path from output: {output}")
 
-            result = self.poster.post_reel(
+            result = self._post_reel_with_retry(
                 video=video_path,
                 caption=caption,
                 share_to_feed=share_to_feed
@@ -97,3 +98,22 @@ class AutoInsta:
         except Exception as e:
             print(f"❌ Failed: {e}")
             return False
+
+    @retry_with_backoff()
+    def _post_reel_with_retry(self, video: str, caption: str, share_to_feed: bool):
+        """
+        Internal method to post reel with retry logic.
+
+        Args:
+            video: Path to video file
+            caption: Caption text
+            share_to_feed: Whether to share to feed
+
+        Returns:
+            Result dict with post details
+        """
+        return self.poster.post_reel(
+            video=video,
+            caption=caption,
+            share_to_feed=share_to_feed
+        )
