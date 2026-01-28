@@ -122,6 +122,7 @@ to yourself in a world that often pressures conformity.
 
     def __init__(
         self,
+        bucket_name: str,
         access_token: Optional[str] = None,
         ig_user_id: Optional[str] = None,
         prompt_index: Optional[int] = None
@@ -129,6 +130,7 @@ to yourself in a world that often pressures conformity.
         """Initialize WiseMutts with predefined configuration.
 
         Args:
+            bucket_name: S3 bucket name for uploading videos
             access_token: Instagram API token
             ig_user_id: Instagram user ID
             prompt_index: Which prompt to use (0, 1, or 2). If None, uses daily rotation.
@@ -137,10 +139,12 @@ to yourself in a world that often pressures conformity.
             daily_prompt = self.PROMPTS[prompt_index]
         else:
             daily_prompt = self.get_daily_prompt()
+
         self.auto_insta = AutoInsta(
             user_prompt=daily_prompt,
             access_token=access_token,
             ig_user_id=ig_user_id,
+            bucket_name=bucket_name,
             image_model="rundiffusion:110@101",
             video_model="bytedance:1@1",
             width=1088,

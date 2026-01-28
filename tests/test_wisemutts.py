@@ -14,7 +14,7 @@ class TestWiseMuttsInit:
     @patch('src.wisemutts.AutoInsta')
     def test_init_success(self, mock_autoinsta):
         """Test successful initialization."""
-        wisemutts = WiseMutts()
+        wisemutts = WiseMutts(bucket_name="test-bucket")
 
         assert isinstance(wisemutts, WiseMutts)
         mock_autoinsta.assert_called_once()
@@ -26,7 +26,7 @@ class TestWiseMuttsInit:
     @patch('src.wisemutts.AutoInsta')
     def test_init_with_custom_prompt_index(self, mock_autoinsta):
         """Test initialization with custom prompt index."""
-        WiseMutts(prompt_index=2)
+        WiseMutts(bucket_name="test-bucket", prompt_index=2)
 
         call_kwargs = mock_autoinsta.call_args[1]
         # Verify the third prompt was passed
@@ -39,7 +39,7 @@ class TestWiseMuttsInit:
     @patch('src.wisemutts.AutoInsta')
     def test_init_passes_background_audio_paths(self, mock_autoinsta):
         """Test initialization passes background audio paths."""
-        WiseMutts()
+        WiseMutts(bucket_name="test-bucket")
 
         call_kwargs = mock_autoinsta.call_args[1]
         assert 'background_audio_paths' in call_kwargs
@@ -111,7 +111,7 @@ class TestWiseMuttsProxyMethods:
         mock_autoinsta_instance.creator = mock_creator
         mock_autoinsta_class.return_value = mock_autoinsta_instance
 
-        wisemutts = WiseMutts()
+        wisemutts = WiseMutts(bucket_name="test-bucket")
         result = await wisemutts.create()
 
         mock_autoinsta_instance.create.assert_called_once()
@@ -129,7 +129,7 @@ class TestWiseMuttsProxyMethods:
         mock_autoinsta_instance.create_captions.return_value = "Captions"
         mock_autoinsta_class.return_value = mock_autoinsta_instance
 
-        wisemutts = WiseMutts()
+        wisemutts = WiseMutts(bucket_name="test-bucket")
         result = await wisemutts.create_captions()
 
         mock_autoinsta_instance.create_captions.assert_called_once()
@@ -146,7 +146,7 @@ class TestWiseMuttsProxyMethods:
         mock_autoinsta_instance.post.return_value = True
         mock_autoinsta_class.return_value = mock_autoinsta_instance
 
-        wisemutts = WiseMutts()
+        wisemutts = WiseMutts(bucket_name="test-bucket")
         result = wisemutts.post(caption="Test", share_to_feed=False)
 
         mock_autoinsta_instance.post.assert_called_once_with(
