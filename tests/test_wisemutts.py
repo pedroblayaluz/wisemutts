@@ -21,15 +21,16 @@ class TestWiseMuttsInit:
 
     @patch.dict('os.environ', {
         'INSTAGRAM_ACCESS_TOKEN': 'token',
-        'INSTAGRAM_USER_ID': 'user'
+        'INSTAGRAM_USER_ID': 'user',
+        'PROMPT_MODE': '2'
     })
     @patch('src.wisemutts.AutoInsta')
     def test_init_with_custom_prompt_index(self, mock_autoinsta):
-        """Test initialization with custom prompt index."""
-        WiseMutts(prompt_index=2)
+        """Test initialization with custom prompt index via PROMPT_MODE."""
+        WiseMutts()
 
         call_kwargs = mock_autoinsta.call_args[1]
-        # Verify the third prompt was passed
+        # Verify the third prompt (index 2) was passed
         assert "authenticity" in call_kwargs['user_prompt']
 
     @patch.dict('os.environ', {
