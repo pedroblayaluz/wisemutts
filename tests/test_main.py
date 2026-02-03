@@ -21,7 +21,7 @@ class TestMain:
         mock_wisemutts.create = AsyncMock(return_value="video.mp4")
         mock_captions = Mock()
         mock_captions.instagram.caption = "Test caption"
-        mock_wisemutts.create_captions = AsyncMock(return_value=mock_captions)
+        mock_wisemutts.get_captions = Mock(return_value=mock_captions)
         mock_wisemutts.post = Mock(return_value=True)
         mock_wisemutts_class.return_value = mock_wisemutts
 
@@ -29,19 +29,21 @@ class TestMain:
 
         mock_wisemutts_class.assert_called_once()
         mock_wisemutts.create.assert_called_once()
-        mock_wisemutts.create_captions.assert_called_once()
+        mock_wisemutts.get_captions.assert_called_once()
         mock_wisemutts.post.assert_called_once()
 
+    @patch('src.main.load_dotenv')
     @patch.dict('os.environ', {}, clear=True)
     @pytest.mark.asyncio
-    async def test_main_missing_access_token(self):
+    async def test_main_missing_access_token(self, mock_load_dotenv):
         """Test main fails without INSTAGRAM_ACCESS_TOKEN."""
         with pytest.raises(ValueError, match="INSTAGRAM_ACCESS_TOKEN"):
             await main()
 
+    @patch('src.main.load_dotenv')
     @patch.dict('os.environ', {'INSTAGRAM_ACCESS_TOKEN': 'token'}, clear=True)
     @pytest.mark.asyncio
-    async def test_main_missing_user_id(self):
+    async def test_main_missing_user_id(self, mock_load_dotenv):
         """Test main fails without INSTAGRAM_USER_ID."""
         with pytest.raises(ValueError, match="INSTAGRAM_USER_ID"):
             await main()
@@ -56,12 +58,18 @@ class TestMain:
         """Test main handles post failure."""
         mock_wisemutts = Mock()
         mock_wisemutts.create = AsyncMock(return_value="video.mp4")
-        mock_wisemutts.create_captions = AsyncMock(return_value=Mock(instagram=Mock(caption="Caption")))
+        mock_captions = Mock()
+        mock_captions.instagram = Mock()
+        mock_captions.instagram.caption = "Caption"
+        mock_wisemutts.get_captions = Mock(return_value=mock_captions)
         mock_wisemutts.post = Mock(return_value=False)  # Post failed
         mock_wisemutts_class.return_value = mock_wisemutts
 
+        # main() catches exceptions internally, so it won't raise
+        # The error should be handled gracefully
         await main()
 
+        # Verify post was attempted
         mock_wisemutts.post.assert_called_once()
 
     @patch.dict('os.environ', {

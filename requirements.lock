@@ -52,7 +52,7 @@ id==1.5.0
 idna==3.11
 importlib_metadata==8.7.1
 iniconfig==2.3.0
-instapost==0.2.0
+instapost==0.2.1
 invoke==2.2.1
 ipykernel==7.1.0
 ipython==9.9.0

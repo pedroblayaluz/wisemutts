@@ -1,5 +1,6 @@
 import os
 import random
+import time
 from typing import Optional
 from datetime import datetime
 from .autoinsta import AutoInsta
@@ -226,14 +227,70 @@ we love. Observations about connection lost to screens.
         await self.auto_insta.create()
         return self.auto_insta.creator.output
 
-    async def create_captions(self):
-        """Generate captions for the created media."""
-        return await self.auto_insta.create_captions()
+    def get_captions(self):
+        """Get captions generated during media creation."""
+        return self.auto_insta.get_captions()
 
     def post(
         self,
         caption: str = "🧘 Wisdom from WiseMutts",
-        share_to_feed: bool = True
+        share_to_feed: bool = True,
+        max_retries: int = 10,
+        retry_timeout: int = 600
     ) -> bool:
-        """Post the created media to Instagram as a reel."""
-        return self.auto_insta.post(caption=caption, share_to_feed=share_to_feed)
+        """Post the created media to Instagram as a reel with retry logic.
+
+        Args:
+            caption: Caption text for the reel
+            share_to_feed: Whether to share to feed
+            max_retries: Maximum number of retry attempts
+            retry_timeout: Total timeout in seconds (default 600 = 10 minutes)
+
+        Returns:
+            True if post was successful, False otherwise
+        """
+        start_time = time.time()
+        attempt = 0
+
+        while attempt < max_retries:
+            elapsed_time = time.time() - start_time
+
+            # Check if we've exceeded the timeout
+            if elapsed_time > retry_timeout:
+                print(f"⏱️ Retry timeout exceeded ({retry_timeout}s). Giving up.")
+                return False
+
+            attempt += 1
+            time_left = retry_timeout - elapsed_time
+
+            try:
+                print(f"📤 Upload attempt {attempt}/{max_retries} "
+                      f"(Time left: {int(time_left)}s)")
+                result = self.auto_insta.post(
+                    caption=caption,
+                    share_to_feed=share_to_feed
+                )
+                if result:
+                    print("✅ Post successful!")
+                    return True
+                else:
+                    print("⚠️ Post returned False, retrying...")
+            except Exception as e:
+                print(f"❌ Upload error: {e}")
+                if attempt < max_retries:
+                    # Calculate exponential backoff: 5, 10, 20, 40, 60, 60, 60...
+                    backoff = min(2 ** (attempt - 1) * 5, 60)
+                    time_left = retry_timeout - (time.time() - start_time)
+
+                    if time_left > 0:
+                        wait_time = min(backoff, time_left)
+                        print(f"⏳ Waiting {wait_time:.0f}s before retry...")
+                        time.sleep(wait_time)
+                    else:
+                        print("⏱️ Timeout reached, no time for retry.")
+                        return False
+                else:
+                    return False
+
+        print(f"❌ Failed after {max_retries} attempts")
+        return False

@@ -144,8 +144,8 @@ class TestAutoInstaCreate:
         assert call_kwargs['background_relative_volume'] == 1.5
 
 
-class TestAutoInstaCreateCaptions:
-    """Test AutoInsta.create_captions() method."""
+class TestAutoInstaGetCaptions:
+    """Test AutoInsta.get_captions() method."""
 
     @patch.dict('os.environ', {
         'INSTAGRAM_ACCESS_TOKEN': 'token',
@@ -153,20 +153,22 @@ class TestAutoInstaCreateCaptions:
     })
     @patch('src.autoinsta.InstagramPoster')
     @patch('src.autoinsta.MediaCreator')
-    @pytest.mark.asyncio
-    async def test_create_captions_success(self, mock_media_creator_class, mock_poster_class):
-        """Test successful caption creation."""
-        mock_creator_instance = AsyncMock()
-        mock_creator_instance.create_captions.return_value = "Generated captions"
+    def test_get_captions_success(self, mock_media_creator_class, mock_poster_class):
+        """Test successful caption retrieval."""
+        mock_creator_instance = Mock()
+        mock_media_handler_instance = Mock()
+        mock_studio_instance = Mock()
+        mock_studio_instance.captions = "Retrieved captions"
+        mock_media_handler_instance.studio = mock_studio_instance
+        mock_creator_instance.media_handler = mock_media_handler_instance
         mock_media_creator_class.return_value = mock_creator_instance
 
         autoinsta = AutoInsta(user_prompt="Test")
         autoinsta.creator = mock_creator_instance
 
-        result = await autoinsta.create_captions()
+        result = autoinsta.get_captions()
 
-        assert result == "Generated captions"
-        mock_creator_instance.create_captions.assert_called_once()
+        assert result == "Retrieved captions"
 
     @patch.dict('os.environ', {
         'INSTAGRAM_ACCESS_TOKEN': 'token',
@@ -174,13 +176,12 @@ class TestAutoInstaCreateCaptions:
     })
     @patch('src.autoinsta.InstagramPoster')
     @patch('src.autoinsta.MediaCreator')
-    @pytest.mark.asyncio
-    async def test_create_captions_without_creator(self, mock_media_creator_class, mock_poster_class):
-        """Test captions creation fails without creator."""
+    def test_get_captions_without_creator(self, mock_media_creator_class, mock_poster_class):
+        """Test captions retrieval fails without creator."""
         autoinsta = AutoInsta(user_prompt="Test")
 
         with pytest.raises(ValueError, match="Call create\\(\\) first"):
-            await autoinsta.create_captions()
+            autoinsta.get_captions()
 
 
 class TestAutoInstaPost:

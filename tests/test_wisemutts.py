@@ -122,17 +122,16 @@ class TestWiseMuttsProxyMethods:
         'INSTAGRAM_USER_ID': 'user'
     })
     @patch('src.wisemutts.AutoInsta')
-    @pytest.mark.asyncio
-    async def test_create_captions_proxies_to_autoinsta(self, mock_autoinsta_class):
-        """Test create_captions() proxies to AutoInsta."""
-        mock_autoinsta_instance = AsyncMock()
-        mock_autoinsta_instance.create_captions.return_value = "Captions"
+    def test_get_captions_proxies_to_autoinsta(self, mock_autoinsta_class):
+        """Test get_captions() proxies to AutoInsta."""
+        mock_autoinsta_instance = Mock()
+        mock_autoinsta_instance.get_captions.return_value = "Captions"
         mock_autoinsta_class.return_value = mock_autoinsta_instance
 
         wisemutts = WiseMutts()
-        result = await wisemutts.create_captions()
+        result = wisemutts.get_captions()
 
-        mock_autoinsta_instance.create_captions.assert_called_once()
+        mock_autoinsta_instance.get_captions.assert_called_once()
         assert result == "Captions"
 
     @patch.dict('os.environ', {

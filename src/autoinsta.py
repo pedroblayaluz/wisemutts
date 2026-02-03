@@ -50,15 +50,13 @@ class AutoInsta:
         print("✅ Media created! Access via: self.creator.output")
         return self.creator.output
 
-    async def create_captions(self):
-        """Generate captions for the created media."""
+    def get_captions(self):
+        """Get captions generated during media creation."""
         if not self.creator:
             raise ValueError("Call create() first")
 
-        print("📝 Generating captions...")
-        captions = await self.creator.create_captions()
-        print("✅ Captions generated!")
-        return captions
+        # Captions are already generated during create(), stored in studio
+        return self.creator.media_handler.studio.captions
 
     def post(
         self,

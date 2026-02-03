@@ -51,14 +51,14 @@ async def main():
             traceback.print_exc()
             raise
 
-        # Generate captions
-        print("Step 2: Generating captions...")
+        # Get captions (already generated during media creation)
+        print("Step 2: Getting captions...")
         try:
-            captions = await wisemutts.create_captions()
+            captions = wisemutts.get_captions()
             caption_text = captions.instagram.caption if hasattr(captions, 'instagram') else ""
-            print(f"✅ Captions generated: {caption_text[:50]}...\n")
+            print(f"✅ Captions retrieved: {caption_text[:50]}...\n")
         except Exception as e:
-            print(f"❌ Failed to generate captions: {e}")
+            print(f"❌ Failed to get captions: {e}")
             traceback.print_exc()
             raise
 
