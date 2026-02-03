@@ -6,11 +6,23 @@ Automated Instagram content creation with AI-generated pixel art videos and phil
 
 ### How It Works
 
-Every day, wisemutts creates and posts beautiful pixel art videos featuring a contemplative dog with whispered wisdom. Each day rotates through three themes:
+Every day, wisemutts creates and posts beautiful pixel art videos featuring a contemplative dog with whispered wisdom. Each day rotates through five themes:
 
 1. **Presence & Simplicity** - Peace in nature
-2. **Digital World** - Navigating technology with clarity
-3. **Authenticity** - Being yourself
+2. **Alien Scenario** - Wonder and new perspectives
+3. **Social Scenario** - Authenticity and individuality
+4. **Nighttime Nature** - Serenity under the stars
+5. **Lofi Home** - Companionship and quiet moments
+
+#### Prompt Selection Modes
+
+By default, wisemutts uses **daily rotation** — cycling through prompts based on the day of the year for even distribution. You can configure this behavior:
+
+- **Daily Rotation** (default): `PROMPT_MODE=daily` or unset
+- **Random Selection**: `PROMPT_MODE=random` — Randomly select a prompt each run
+- **Specific Prompt**: `PROMPT_MODE=0` through `PROMPT_MODE=4` — Choose a specific prompt by index
+
+This is useful for manual runs on GitHub Actions where you want to control which theme to use for content generation.
 
 This is powered by two custom packages I built:
 
@@ -36,19 +48,21 @@ GitHub Actions CI/CD automatically creates and posts videos daily at 6 PM São P
 
 Check out some generated videos:
 
-### 🌿 Presence & Simplicity
+### 0️⃣ 🌿 Presence & Simplicity
 https://github.com/user-attachments/assets/4097bf88-76fc-4f21-80ef-fb8fd9f033ad
 > *Sometimes the best moments are the quiet ones 🐾✨ Find peace in simply being. Double tap if you needed this reminder 💙
 > 
 > #peaceful #mindfulness #doglovers #pixelart #calm*
 
+---
+
+### 1️⃣ 👽 Alien Scenario
 
 *Coming soon...*
 
 ---
 
-### 🦋 Authenticity
-
+### 2️⃣ 🦋 Authenticity
 
 https://github.com/user-attachments/assets/74e835de-0a49-47c7-9882-6ace671b1013
 > *In a world of copies, be an original 🐾✨ Your uniqueness is your superpower. Stay true to you 💙
@@ -56,14 +70,14 @@ https://github.com/user-attachments/assets/74e835de-0a49-47c7-9882-6ace671b1013
 > #selflove #beyourself #motivation #inspiration #positivevibes*
 
 ---
-### 🤖 Digital World
 
+### 3️⃣ 🌙 Nighttime Nature
 
+*Coming soon...*
 
-https://github.com/user-attachments/assets/dfa9e172-6aa0-4826-9fa6-a63ccd690c60
+---
 
+### 4️⃣ 🏠 Lofi Home
 
-> *We scroll for connection but feel more alone 💔 Technology built walls, not bridges. Time to remember what it means to be human ✨*
->
-> #technology #mentalhealth #connection #awareness #digitaldetox
+*Coming soon...*
 

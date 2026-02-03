@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Optional
 from datetime import datetime
 from .autoinsta import AutoInsta
@@ -35,33 +36,28 @@ sentences brief and impactful.
 **Phrases:** 3-5 short sentences
 **Theme:** The meaning of life, presence, simplicity
 """,
-        # Digital Scenario
+        # Alien Scenario
         """
 ## Video Prompt
 
 ### Visual
-A pixel art dog amidst a futuristic technological landscape filled with
-robots and towering sci-fi buildings. Neon colors, glowing architecture,
-and advanced technological elements surrounding the dog. The upper portion
-is clear for text overlay. The dog moves peacefully through this futuristic
-cityscape, with robots and hovering structures creating a dynamic yet serene
-backdrop.
+A pixel art dog-like spirit exploring a beautiful alien planet.
+The landscape is vibrant with otherworldly beauty. The upper portion is
+clear for text overlay.
 
-**Style:** Pixel art, 8-bit/16-bit aesthetic, futuristic sci-fi theme
-**Composition:** Upper portion - clear/open for text, Lower portion - pixel art dog with movement
-**Subject:** Pixel art dog in a futuristic technological world with robots and sci-fi buildings
+**Style:** Pixel art, 8-bit/16-bit aesthetic, alien/sci-fi environment
+**Composition:** Upper portion - clear for text; Lower portion - dog with movement
+**Subject:** Dog in an alien landscape
 **Movement:** Minimal, loopable micro-animations
-**Mood:** Contemplative, futuristic, serene
+**Mood:** Inspiring, wondrous, peaceful
 
 ### Narration
-Short, whispered critiques about the digital age: how smartphones trap our attention,
-how technology promised connection but delivered isolation, how we worship progress
-while losing ourselves. Observations about the futility of endless scrolling,
-the performance of digital life, and the human cost of constant connectivity.
+Short, whispered reflections on growth, embracing the unknown, and finding
+beauty in unfamiliar places.
 
-**Voice:** Soft, contemplative, slightly melancholic
+**Voice:** Soft, contemplative, hopeful
 **Phrases:** 3-5 short sentences
-**Theme:** Digital society, technology critique, disconnection, human cost of progress
+**Theme:** Growth, uniqueness, embracing the unknown
 """,
         # Social Scenario
         """
@@ -85,6 +81,60 @@ to yourself in a world that often pressures conformity.
 **Voice:** Soft, contemplative
 **Phrases:** 3-5 short sentences
 **Theme:** Authenticity, individuality
+""",
+        # Nighttime Nature Scenario
+        """
+## Video Prompt
+
+### Visual
+A peaceful pixel art loop of a dog in a tranquil natural setting at night.
+A moonlit landscape with a very starry sky filling the upper portion, creating
+a sense of calm wonder and serenity. The composition features the night sky with
+the moon and numerous stars for text overlay, and the lower portion containing
+the dog with subtle, gentle movements. The loop should feel meditative and seamless.
+
+**Style:** Pixel art, 8-bit/16-bit aesthetic
+**Composition:** Upper portion - moonlit night sky with abundant stars and clear area
+for text; Lower portion - dog with movement
+**Subject:** Dog in a peaceful natural environment at night
+**Movement:** Minimal, loopable micro-animations
+**Mood:** Peaceful, contemplative, meditative, serene, mystical
+
+### Narration
+Short, whispered philosophical reflections on life's meaning under the stars.
+Each phrase focuses on presence, simple joys, quiet moments, and finding peace
+in stillness and the night sky. Keep sentences brief and impactful.
+
+**Voice:** Soft, contemplative, gentle
+**Phrases:** 3-5 short sentences
+**Theme:** The meaning of life, presence, simplicity, the night, serenity
+""",
+        # Lofi Home with Owner
+        """
+## Video Prompt
+
+### Visual
+A cozy lofi pixel art home scene with a dog and its owner sitting together.
+The owner is seated and absorbed in their smartphone, seemingly oblivious.
+The dog sits nearby, looking at the owner with a sad or longing expression,
+yearning for attention and connection. The room has warm, comfortable lighting
+but feels emotionally distant. The upper portion is clear for text overlay.
+
+**Style:** Pixel art, 8-bit/16-bit aesthetic, lofi/cozy vibes
+**Composition:** Upper portion - clear/open for text; Lower portion - scene
+with owner and dog
+**Subject:** Dog and owner in a home setting, with emotional disconnect
+**Movement:** Minimal, loopable micro-animations
+**Mood:** Bittersweet, melancholic, neglected, yearning
+
+### Narration
+Short, whispered reflections on digital distraction, loneliness despite
+physical proximity, the importance of presence, or being forgotten by those
+we love. Observations about connection lost to screens.
+
+**Voice:** Soft, melancholic, contemplative
+**Phrases:** 3-5 short sentences
+**Theme:** Digital distraction, neglect, loneliness, the need for presence
 """
     ]
 
@@ -96,10 +146,19 @@ to yourself in a world that often pressures conformity.
         return WiseMutts.PROMPTS[prompt_index]
 
     @staticmethod
+    def get_random_prompt():
+        """Select a random prompt."""
+        return random.choice(WiseMutts.PROMPTS)
+
+    @staticmethod
     def get_background_audio_paths():
         """Get background audio paths with support for both local dev and Lambda environments."""
-        # Get the base directory - Lambda uses /var/task, local uses current directory
-        base_dir = os.getenv("LAMBDA_TASK_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        # Get the base directory - Lambda uses /var/task, local uses project root
+        if os.getenv("LAMBDA_TASK_ROOT"):
+            base_dir = os.getenv("LAMBDA_TASK_ROOT")
+        else:
+            # For local development, go up from src/ to project root
+            base_dir = os.path.dirname(os.path.dirname(__file__))
 
         track_files = [
             "4YnecPKoxaI.mp3",
@@ -118,24 +177,30 @@ to yourself in a world that often pressures conformity.
             "5BIqnLWSC_s.mp3"
         ]
 
-        return [os.path.join(base_dir, "tracks", track) for track in track_files]
+        return [os.path.join(base_dir, "tracks", track)
+                for track in track_files]
 
     def __init__(
         self,
         access_token: Optional[str] = None,
         ig_user_id: Optional[str] = None,
-        prompt_index: Optional[int] = None
+        prompt_index: Optional[int] = None,
+        prompt_mode: str = "daily"
     ):
         """Initialize WiseMutts with predefined configuration.
 
         Args:
             access_token: Instagram API token
             ig_user_id: Instagram user ID
-            prompt_index: Which prompt to use (0, 1, or 2). If None, uses daily rotation.
+            prompt_index: Which prompt to use (0-4). If None, uses prompt_mode.
+            prompt_mode: How to select prompts - "daily" (default), "random",
+                         or explicit index.
         """
         if prompt_index is not None:
             daily_prompt = self.PROMPTS[prompt_index]
-        else:
+        elif prompt_mode == "random":
+            daily_prompt = self.get_random_prompt()
+        else:  # "daily" or default
             daily_prompt = self.get_daily_prompt()
         self.auto_insta = AutoInsta(
             user_prompt=daily_prompt,

@@ -166,5 +166,5 @@ class TestWiseMuttsPromptsStructure:
         assert len(WiseMutts.PROMPTS) >= 1
 
     def test_prompts_count(self):
-        """Test that there are exactly 3 prompts."""
-        assert len(WiseMutts.PROMPTS) == 3
+        """Test that there are exactly 5 prompts."""
+        assert len(WiseMutts.PROMPTS) == 5
