@@ -1,3 +1,4 @@
+"""WiseMutts main entry point for AWS Lambda and local execution."""
 import asyncio
 import os
 import json
