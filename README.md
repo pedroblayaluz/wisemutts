@@ -77,11 +77,19 @@ https://github.com/user-attachments/assets/74e835de-0a49-47c7-9882-6ace671b1013
 
 ### 3️⃣ 🌙 Nighttime Nature
 
-*Coming soon...*
+
+https://github.com/user-attachments/assets/1e21ef1d-01c2-46f2-8c00-84904279e071
+> *In the stillness, we find peace 🌙✨ Tag someone who needs this moment of calm 🐾
+>
+> #reels #peaceful #nightvibes #pixelart #meditation*
 
 ---
 
 ### 4️⃣ 🏠 Lofi Home
 
-*Coming soon...*
+
+https://github.com/user-attachments/assets/638860e1-cb33-4138-82d6-c1693410b92f
+>*We scroll through thousands, but miss the love right beside us 🐕💔 Put the phone down today
+>
+>#doglovers #pupper #reels #trending #viral*
 
