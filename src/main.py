@@ -21,25 +21,8 @@ async def main():
     print("🚀 Starting WiseMutts automation...\n")
 
     try:
-        # Determine prompt selection mode
-        prompt_index = None
-        prompt_mode = "daily"  # default
-
-        # Check for PROMPT_MODE environment variable (random, daily, or index)
-        env_prompt_mode = os.getenv("PROMPT_MODE", "random").lower()
-        if env_prompt_mode == "random":
-            prompt_mode = "random"
-        elif env_prompt_mode.isdigit():
-            prompt_index = int(env_prompt_mode)
-
-        mode_display = prompt_mode if prompt_index is None else f'Index {prompt_index}'
-        print(f"📋 Prompt selection mode: {mode_display}\n")
-
-        # Initialize WiseMutts
-        wisemutts = WiseMutts(
-            prompt_index=prompt_index,
-            prompt_mode=prompt_mode
-        )
+        # Initialize WiseMutts (prompt selection is handled internally via PROMPT_MODE env var)
+        wisemutts = WiseMutts()
 
         # Create media
         print("Step 1: Creating media...")

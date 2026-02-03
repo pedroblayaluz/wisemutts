@@ -89,22 +89,22 @@ to yourself in a world that often pressures conformity.
 
 ### Visual
 A peaceful pixel art loop of a dog in a tranquil natural setting at night.
-A moonlit landscape with a very starry sky filling the upper portion, creating
-a sense of calm wonder and serenity. The composition features the night sky with
-the moon and numerous stars for text overlay, and the lower portion containing
-the dog with subtle, gentle movements. The loop should feel meditative and seamless.
+A moonlit landscape with a beautiful night sky filling the upper portion,
+creating a sense of calm wonder and serenity. The composition features the night
+sky for text overlay, and the lower portion containing the dog with subtle,
+gentle movements. The loop should feel meditative and seamless.
 
 **Style:** Pixel art, 8-bit/16-bit aesthetic
-**Composition:** Upper portion - moonlit night sky with abundant stars and clear area
-for text; Lower portion - dog with movement
+**Composition:** Upper portion - beautiful night sky with clear area for text;
+Lower portion - dog with movement
 **Subject:** Dog in a peaceful natural environment at night
 **Movement:** Minimal, loopable micro-animations
 **Mood:** Peaceful, contemplative, meditative, serene, mystical
 
 ### Narration
-Short, whispered philosophical reflections on life's meaning under the stars.
+Short, whispered philosophical reflections on life's meaning at night.
 Each phrase focuses on presence, simple joys, quiet moments, and finding peace
-in stillness and the night sky. Keep sentences brief and impactful.
+in stillness. Keep sentences brief and impactful.
 
 **Voice:** Soft, contemplative, gentle
 **Phrases:** 3-5 short sentences
@@ -139,6 +139,40 @@ we love. Observations about connection lost to screens.
 """
     ]
 
+    def __init__(
+        self,
+        access_token: Optional[str] = None,
+        ig_user_id: Optional[str] = None
+    ):
+        """Initialize WiseMutts with predefined configuration.
+
+        Prompt selection is determined by PROMPT_MODE environment variable.
+        See select_prompt() for details.
+
+        Args:
+            access_token: Instagram API token
+            ig_user_id: Instagram user ID
+        """
+        daily_prompt = self.select_prompt()
+        self.auto_insta = AutoInsta(
+            user_prompt=daily_prompt,
+            access_token=access_token,
+            ig_user_id=ig_user_id,
+            image_model="rundiffusion:110@101",
+            video_model="bytedance:1@1",
+            width=1088,
+            height=1920,
+            narration_silence_tail=2,
+            narration_speed=1.0,
+            background_relative_volume=2.0,
+            background_audio_paths=self.get_background_audio_paths(),
+            subtitle_fontname="Times New Roman",
+            subtitle_fontsize=18,
+            subtitle_color="#FFFFFF",
+            subtitle_outline_color="#000000",
+            subtitle_positions=["top_center"]
+        )
+
     @staticmethod
     def get_daily_prompt():
         """Select a prompt based on the current day for even distribution."""
@@ -150,6 +184,24 @@ we love. Observations about connection lost to screens.
     def get_random_prompt():
         """Select a random prompt."""
         return random.choice(WiseMutts.PROMPTS)
+
+    @staticmethod
+    def select_prompt():
+        """Select prompt based on PROMPT_MODE environment variable.
+
+        Returns:
+            Selected prompt string based on environment:
+            - Numeric (0-4): Use that specific prompt
+            - "random": Select a random prompt
+            - Default ("daily"): Select by day of year
+        """
+        prompt_mode = os.getenv("PROMPT_MODE", "daily").lower()
+
+        if prompt_mode.isdigit():
+            return WiseMutts.PROMPTS[int(prompt_mode)]
+        if prompt_mode == "random":
+            return WiseMutts.get_random_prompt()
+        return WiseMutts.get_daily_prompt()
 
     @staticmethod
     def get_background_audio_paths():
@@ -180,47 +232,6 @@ we love. Observations about connection lost to screens.
 
         return [os.path.join(base_dir, "tracks", track)
                 for track in track_files]
-
-    def __init__(
-        self,
-        access_token: Optional[str] = None,
-        ig_user_id: Optional[str] = None,
-        prompt_index: Optional[int] = None,
-        prompt_mode: str = "daily"
-    ):
-        """Initialize WiseMutts with predefined configuration.
-
-        Args:
-            access_token: Instagram API token
-            ig_user_id: Instagram user ID
-            prompt_index: Which prompt to use (0-4). If None, uses prompt_mode.
-            prompt_mode: How to select prompts - "daily" (default), "random",
-                         or explicit index.
-        """
-        if prompt_index is not None:
-            daily_prompt = self.PROMPTS[prompt_index]
-        elif prompt_mode == "random":
-            daily_prompt = self.get_random_prompt()
-        else:  # "daily" or default
-            daily_prompt = self.get_daily_prompt()
-        self.auto_insta = AutoInsta(
-            user_prompt=daily_prompt,
-            access_token=access_token,
-            ig_user_id=ig_user_id,
-            image_model="rundiffusion:110@101",
-            video_model="bytedance:1@1",
-            width=1088,
-            height=1920,
-            narration_silence_tail=5,
-            narration_speed=1.0,
-            background_relative_volume=2.0,
-            background_audio_paths=self.get_background_audio_paths(),
-            subtitle_fontname="Times New Roman",
-            subtitle_fontsize=18,
-            subtitle_color="#FFFFFF",
-            subtitle_outline_color="#000000",
-            subtitle_positions=["top_center"]
-        )
 
     async def create(self):
         """Create media using MediaCreator."""
