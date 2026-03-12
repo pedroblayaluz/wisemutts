@@ -1,9 +1,16 @@
 name: WiseMutts Daily Automation
 
 on:
-  schedule:
-    - cron: '0 21 * * *'  # Daily at 6 PM São Paulo time (9 PM UTC)
-  workflow_dispatch:  # Manual trigger option
+  push:
+    branches-ignore:
+      - '**'
+    tags-ignore:
+      - '**'
+
+# Original triggers kept here for later re-enable:
+# schedule:
+#   - cron: '0 21 * * *'  # Daily at 6 PM Sao Paulo time (9 PM UTC)
+# workflow_dispatch:  # Manual trigger option
 
 permissions:
   id-token: write
